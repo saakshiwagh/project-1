@@ -1,11 +1,18 @@
+export const config = {
+  api: {
+    bodyParser: true, // Ensure POST JSON body is parsed
+  },
+};
+
 export default async function handler(req, res) {
-    if (req.method === 'POST') {
+  if (req.method === 'POST') {
     const data = req.body;
     return res.status(200).json({
-        message: "Received",
-        data: data,
+      message: "Received",
+      data: data,
     });
-    }
+  }
 
-    return res.status(404).json({ error: "Only POST requests are supported" });
+  // For all non-POST methods
+  return res.status(405).json({ detail: "Method Not Allowed" });
 }
