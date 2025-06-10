@@ -696,6 +696,13 @@ async def query_knowledge_base(request: QueryRequest):
             content={"error": error_msg}
         )
 
+
+app = FastAPI()
+
+@app.get("/")
+async def root():
+    return JSONResponse(content={"message": "TDS Virtual TA is live!"})
+
 # Health check endpoint
 @app.get("/health")
 async def health_check():
@@ -737,4 +744,6 @@ async def health_check():
         )
 
 if __name__ == "__main__":
+    import os
+    port = int(os.environ.get("PORT", 8000))
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True) 
