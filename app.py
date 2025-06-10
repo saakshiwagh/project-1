@@ -13,6 +13,8 @@ import asyncio
 import logging
 import base64
 from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 import uvicorn
 import traceback
 from dotenv import load_dotenv
@@ -594,6 +596,16 @@ def parse_llm_response(response):
             "answer": "Error parsing the response from the language model.",
             "links": []
         }
+
+app = FastAPI()
+
+@app.post("/api")
+async def my_api_function(request: Request):
+    data = await request.json()
+    # Process the data as needed
+    result = {"message": "Received", "data": data}
+    return JSONResponse(content=result)
+
 
 # Define API routes
 @app.post("/query")
