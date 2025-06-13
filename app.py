@@ -13,8 +13,6 @@ import asyncio
 import logging
 import base64
 from fastapi.responses import JSONResponse
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
 import uvicorn
 import traceback
 from dotenv import load_dotenv
@@ -25,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 # Constants
 DB_PATH = "knowledge_base.db"
-SIMILARITY_THRESHOLD = 0.68  # Lowered threshold for better recall
+SIMILARITY_THRESHOLD = 0.6  # Lowered threshold for better recall
 MAX_RESULTS = 10  # Increased to get more context
 load_dotenv()
 MAX_CONTEXT_CHUNKS = 4  # Increased number of chunks per source
@@ -148,7 +146,7 @@ async def get_embedding(text, max_retries=3):
         try:
             logger.info(f"Getting embedding for text (length: {len(text)})")
             # Call the embedding API through aipipe proxy
-            url = "https://aipipe.org/openai/v1/embeddings"
+            url = "https://aiproxy.sanand.workers.dev/openai/v1/chat/completions"
             headers = {
                 "Authorization": API_KEY,
                 "Content-Type": "application/json"
@@ -428,7 +426,7 @@ async def generate_answer(question, relevant_results, max_retries=2):
             
             logger.info("Sending request to LLM API")
             # Call OpenAI API through aipipe proxy
-            url = "https://aipipe.org/openai/v1/chat/completions"
+            url = "https://aiproxy.sanand.workers.dev/openai/v1/chat/completions"
             headers = {
                 "Authorization": API_KEY,
                 "Content-Type": "application/json"
@@ -482,7 +480,7 @@ async def process_multimodal_query(question, image_base64):
         
         logger.info("Processing multimodal query with image")
         # Call the GPT-4o Vision API to process the image and question
-        url = "https://aipipe.org/openai/v1/chat/completions"
+        url = "https://aiproxy.sanand.workers.dev/openai/v1/chat/completions"
         headers = {
             "Authorization": API_KEY,
             "Content-Type": "application/json"
@@ -563,8 +561,8 @@ def parse_llm_response(response):
                 line = re.sub(r'^-\s*', '', line)
                 
                 # Extract URL and text using more flexible patterns
-                url_match = re.search(r'URL:\s*\[(.*?)\]|url:\s*\[(.*?)\]|\[(http[^\]]+)\]|URL:\s*(http\S+)|url:\s*(http\S+)|(http\S+)', line, re.IGNORECASE)
-                text_match = re.search(r'Text:\s*\[(.*?)\]|text:\s*\[(.*?)\]|[""](.*?)[""]|Text:\s*"(.*?)"|text:\s*"(.*?)"', line, re.IGNORECASE)
+                url_match = re.search(r'URL:\s*\[(.?)\]|url:\s\[(.?)\]|\[(http[^\]]+)\]|URL:\s(http\S+)|url:\s*(http\S+)|(http\S+)', line, re.IGNORECASE)
+                text_match = re.search(r'Text:\s*\[(.?)\]|text:\s\[(.?)\]|[""](.?)[""]|Text:\s*"(.?)"|text:\s"(.*?)"', line, re.IGNORECASE)
                 
                 if url_match:
                     # Find the first non-None group from the regex match
@@ -596,16 +594,6 @@ def parse_llm_response(response):
             "answer": "Error parsing the response from the language model.",
             "links": []
         }
-
-app = FastAPI()
-
-@app.post("/api")
-async def my_api_function(request: Request):
-    data = await request.json()
-    # Process the data as needed
-    result = {"message": "Received", "data": data}
-    return JSONResponse(content=result)
-
 
 # Define API routes
 @app.post("/query")
@@ -696,13 +684,6 @@ async def query_knowledge_base(request: QueryRequest):
             content={"error": error_msg}
         )
 
-
-app = FastAPI()
-
-@app.get("/")
-async def root():
-    return JSONResponse(content={"message": "TDS Virtual TA is live!"})
-
 # Health check endpoint
 @app.get("/health")
 async def health_check():
@@ -743,7 +724,5 @@ async def health_check():
             content={"status": "unhealthy", "error": str(e), "api_key_set": bool(API_KEY)}
         )
 
-if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True) 
+if __name__ == "_main_":
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
