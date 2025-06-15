@@ -729,6 +729,10 @@ async def basic_post(request: Request):
     data = await request.json()
     return JSONResponse(content={"message": "Received", "data": data})
 
+@app.get("/")
+def root():
+    return {"status": "ok", "message": "TDS Virtual TA is running"}
+
 
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
