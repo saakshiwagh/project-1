@@ -4,7 +4,7 @@ import json
 import sqlite3
 import numpy as np
 import re
-from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Body
+from fastapi import FastAPI, HTTPException, File, Request, UploadFile, Form, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
@@ -723,6 +723,12 @@ async def health_check():
             status_code=500,
             content={"status": "unhealthy", "error": str(e), "api_key_set": bool(API_KEY)}
         )
+        
+@app.post("/api")
+async def basic_post(request: Request):
+    data = await request.json()
+    return JSONResponse(content={"message": "Received", "data": data})
 
-if __name__ == "_main_":
+
+if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
